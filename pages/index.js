@@ -66,7 +66,7 @@ const buildCalGrid = (year, month) => {
   return [...Array(fd).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
 };
 
-// ===================== SEED DATA (March + April only) =====================
+// ===================== SEED DATA (March, April + May) =====================
 const SEED = () => {
   const mkExp = (d, month, year) => ({ ...d, id: uuid(), type: 'expense', month, year });
   const mkInc = (d, month, year) => ({ ...d, id: uuid(), type: 'income', month, year });
@@ -105,20 +105,131 @@ const SEED = () => {
   const income = [
     mkInc({ description:'Renda Fixa', amount:toCents(2300), category:'Salario', status:'received', date:'2026-03-05', installments:1, installmentMonth:null }, 3, 2026),
     mkInc({ description:'Renda Variavel', amount:toCents(1200), category:'Freelance', status:'received', date:'2026-03-10', installments:1, installmentMonth:null }, 3, 2026),
-    mkInc({ description:'Renda Fixa', amount:toCents(2300), category:'Salario', status:'pending', date:'2026-04-05', installments:1, installmentMonth:null }, 4, 2026),
-    mkInc({ description:'Renda Variavel', amount:toCents(1200), category:'Freelance', status:'pending', date:'2026-04-10', installments:1, installmentMonth:null }, 4, 2026),
+    mkInc({ description:'Renda Fixa', amount:toCents(2300), category:'Salario', status:'received', date:'2026-04-05', installments:1, installmentMonth:null }, 4, 2026),
+    mkInc({ description:'Renda Variavel', amount:toCents(1200), category:'Freelance', status:'received', date:'2026-04-10', installments:1, installmentMonth:null }, 4, 2026),
+  ];
+
+  // ===================== MAIO 2026 — Extrato BB + Nubank =====================
+  const may_exp = [
+    // BB — saidas
+    mkExp({ description:'Shpp Brasil (Shopee)', amount:toCents(59.38), category:'Outros', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-01', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Pao Nosso Oliver Delivery', amount:toCents(26.60), category:'Restaurante', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-04', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Farmacia Pague Menos', amount:toCents(45.60), category:'Saude', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-03', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Elizandra Andre De Oliveira', amount:toCents(500.00), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-05', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Uber Do Brasil', amount:toCents(6.15), category:'Transporte', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-06', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'TIM (Recarga)', amount:toCents(20.00), category:'Comunicacao', group:'necessidades', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-06', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Finnas Flores E Cestas', amount:toCents(86.00), category:'Presentes', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-07', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Nordestao (Supermercado)', amount:toCents(31.59), category:'Alimentacao', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-08', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Jean Aparecido Silva De Brito', amount:toCents(30.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Igreja Batista Ibrecem (Dizimo)', amount:toCents(562.30), category:'Religiao', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Elizandra Andre (Transferencia)', amount:toCents(102.02), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Elizandra Andre (Transferencia)', amount:toCents(126.00), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Elizandra Andre (Transferencia)', amount:toCents(1442.33), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Elizandra Andre (Transferencia)', amount:toCents(1207.00), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Via Hospitalar', amount:toCents(110.00), category:'Saude', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-15', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Jose Rodrigo Souza Nunes', amount:toCents(10.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-17', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Pao Nosso Oliver Delivery', amount:toCents(27.15), category:'Restaurante', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-18', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Alessandra Moura De Araujo', amount:toCents(13.50), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-20', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Heridan Pinheiro Da Silva', amount:toCents(16.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-21', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Maternidade Almeida Castro', amount:toCents(4.50), category:'Saude', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-22', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Farmacia Pague Menos', amount:toCents(634.87), category:'Saude', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-23', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Nordestao (Supermercado)', amount:toCents(88.23), category:'Alimentacao', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-26', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Li Ji', amount:toCents(50.95), category:'Alimentacao', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-29', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Uber Do Brasil', amount:toCents(7.35), category:'Transporte', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Uber Do Brasil', amount:toCents(6.68), category:'Transporte', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'TIM (Recarga)', amount:toCents(30.00), category:'Comunicacao', group:'necessidades', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Drogaria Globo', amount:toCents(52.99), category:'Saude', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-31', installments:1, installmentMonth:null }, 5, 2026),
+    // Nubank — saidas
+    mkExp({ description:'PicPay (Transferencia)', amount:toCents(0.21), category:'Outros', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-01', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Keziany Kathleen', amount:toCents(4.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-01', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Danielle Louise Fernandes', amount:toCents(520.00), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-04', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Airbnb', amount:toCents(348.60), category:'Outros', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-04', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Lucia Helena Soares Da Costa', amount:toCents(40.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-07', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Churrascaria Camaratuba', amount:toCents(3.00), category:'Restaurante', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-07', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Fina Flores E Cestas', amount:toCents(214.00), category:'Presentes', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-08', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Panificadora Pao Nosso', amount:toCents(14.79), category:'Alimentacao', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'debit', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Dia A Dia Atacado', amount:toCents(428.64), category:'Alimentacao', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'debit', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Assai Atacadista', amount:toCents(90.19), category:'Alimentacao', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'debit', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Farmacia Pague Menos', amount:toCents(114.58), category:'Saude', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-11', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Aplicacao RDB', amount:toCents(1207.00), category:'Investimentos', group:'futuro', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Aplicacao RDB', amount:toCents(200.00), category:'Investimentos', group:'futuro', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Aplicacao RDB', amount:toCents(1442.33), category:'Investimentos', group:'futuro', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'TCM TV Cabo Mossoro', amount:toCents(102.02), category:'Casa', group:'necessidades', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'TIM (Plano)', amount:toCents(59.99), category:'Comunicacao', group:'necessidades', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Y T C Monteiro Ltda', amount:toCents(104.00), category:'Casa', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'PicPay (Transferencia)', amount:toCents(8.44), category:'Outros', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-13', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Larissa De Castro Marques', amount:toCents(70.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-13', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'D B O Do Nascimento Barros', amount:toCents(28.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-14', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Francisca Aldevenia Soares', amount:toCents(5.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-15', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Caern (Agua)', amount:toCents(96.83), category:'Casa', group:'necessidades', subcategory:'fixed', status:'paid', paymentMethod:'pix', date:'2026-05-16', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Eric Vinicius Reinaldo', amount:toCents(10.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-16', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Y T C Monteiro Ltda', amount:toCents(31.00), category:'Casa', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-17', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Hinova Pay (Boleto)', amount:toCents(126.90), category:'Outros', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'boleto', date:'2026-05-18', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Danielle Louise Fernandes', amount:toCents(500.20), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-18', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Receita Federal', amount:toCents(87.34), category:'Trabalho', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-21', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Unimed Natal (Plano Saude)', amount:toCents(458.54), category:'Saude', group:'necessidades', subcategory:'fixed', status:'paid', paymentMethod:'boleto', date:'2026-05-21', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Receita Federal', amount:toCents(112.39), category:'Trabalho', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-22', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'iFood', amount:toCents(44.98), category:'Restaurante', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-22', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Salomao Batista (Transf.)', amount:toCents(150.00), category:'Pessoal', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-23', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Assai Atacadista', amount:toCents(30.68), category:'Alimentacao', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'debit', date:'2026-05-24', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'D B O Do Nascimento Barros', amount:toCents(34.90), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-24', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Y T C Monteiro Ltda', amount:toCents(23.50), category:'Casa', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-26', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Americanas', amount:toCents(11.99), category:'Outros', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'debit', date:'2026-05-29', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Epar Estacionamentos', amount:toCents(11.00), category:'Transporte', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'debit', date:'2026-05-29', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Eric Vinicius Reinaldo', amount:toCents(20.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Allan Gas', amount:toCents(115.00), category:'Casa', group:'necessidades', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+    mkExp({ description:'Yonara Viviany Santana', amount:toCents(100.00), category:'Pessoal', group:'desejos', subcategory:'variable', status:'paid', paymentMethod:'pix', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+  ];
+
+  const may_inc = [
+    // BB — entradas
+    mkInc({ description:'Kiwify Pagamentos', amount:toCents(492.33), category:'Renda Extra', status:'received', date:'2026-05-05', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Adao Jose De Oliveira', amount:toCents(130.00), category:'Outra Fonte', status:'received', date:'2026-05-06', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Amarketing & Vendas Ltda', amount:toCents(2299.32), category:'Freelance', status:'received', date:'2026-05-06', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Matheus Da Silva Nascimento', amount:toCents(892.00), category:'Outra Fonte', status:'received', date:'2026-05-07', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Wepayments Kiwify', amount:toCents(46.76), category:'Renda Extra', status:'received', date:'2026-05-08', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Matheus Da Silva Nascimento', amount:toCents(285.00), category:'Outra Fonte', status:'received', date:'2026-05-10', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Matheus Da Silva Nascimento', amount:toCents(30.00), category:'Outra Fonte', status:'received', date:'2026-05-11', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Kiwify Pagamentos', amount:toCents(596.33), category:'Renda Extra', status:'received', date:'2026-05-18', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Mardonio Luiz Peixoto Chaves', amount:toCents(200.00), category:'Outra Fonte', status:'received', date:'2026-05-24', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Elizandra Andre De Oliveira', amount:toCents(150.00), category:'Outra Fonte', status:'received', date:'2026-05-23', installments:1, installmentMonth:null }, 5, 2026),
+    // Nubank — entradas
+    mkInc({ description:'Resgate RDB', amount:toCents(15.00), category:'Investimentos', status:'received', date:'2026-05-01', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Belchior Lino De Oliveira', amount:toCents(1500.00), category:'Outra Fonte', status:'received', date:'2026-05-03', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Yonara Viviany Santana', amount:toCents(3.98), category:'Outra Fonte', status:'received', date:'2026-05-05', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Salomao Salim Da Silva Batista', amount:toCents(500.00), category:'Outra Fonte', status:'received', date:'2026-05-05', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Franciane Maraiza Olinto', amount:toCents(3.98), category:'Outra Fonte', status:'received', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Quezia Sharlene Marinho', amount:toCents(200.00), category:'Outra Fonte', status:'received', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Maria Gorette Andre De Oliveira', amount:toCents(500.00), category:'Outra Fonte', status:'received', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Janaina Cortez Oliveira', amount:toCents(150.00), category:'Outra Fonte', status:'received', date:'2026-05-09', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Belchior Lino De Oliveira', amount:toCents(2000.00), category:'Outra Fonte', status:'received', date:'2026-05-11', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Salomao Salim Da Silva Batista', amount:toCents(1207.00), category:'Outra Fonte', status:'received', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Salomao Salim Da Silva Batista', amount:toCents(1442.33), category:'Outra Fonte', status:'received', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Salomao Salim Da Silva Batista', amount:toCents(126.00), category:'Outra Fonte', status:'received', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Salomao Salim Da Silva Batista', amount:toCents(102.02), category:'Outra Fonte', status:'received', date:'2026-05-12', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Gilrlliany Lidya Justino', amount:toCents(12.30), category:'Outra Fonte', status:'received', date:'2026-05-14', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Gabriel Nunes Arruda Gurgel', amount:toCents(8.30), category:'Outra Fonte', status:'received', date:'2026-05-15', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Jonathan Evangelista Do Rego', amount:toCents(3.98), category:'Outra Fonte', status:'received', date:'2026-05-15', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Resgate RDB', amount:toCents(520.00), category:'Investimentos', status:'received', date:'2026-05-18', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Clelio Silva Batista', amount:toCents(350.00), category:'Outra Fonte', status:'received', date:'2026-05-19', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Resgate RDB', amount:toCents(90.00), category:'Investimentos', status:'received', date:'2026-05-24', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Unimed Natal (Reembolso)', amount:toCents(808.12), category:'Outra Fonte', status:'received', date:'2026-05-26', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Elizandra Andre De Oliveira', amount:toCents(300.00), category:'Outra Fonte', status:'received', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
+    mkInc({ description:'Eric Vinicius Reinaldo (Reemb.)', amount:toCents(10.00), category:'Outra Fonte', status:'received', date:'2026-05-30', installments:1, installmentMonth:null }, 5, 2026),
   ];
 
   return [
     ...mar_exp.map(e => mkExp(e, 3, 2026)),
     ...apr_exp.map(e => mkExp(e, 4, 2026)),
     ...income,
+    ...may_exp,
+    ...may_inc,
   ];
 };
 
 // ===================== STATE =====================
 const FinCtx = createContext(null);
-const INIT_STATE = { transactions: [], view: 'dashboard', month: 4, year: 2026, loading: true, syncing: false };
+const INIT_STATE = { transactions: [], view: 'dashboard', month: 5, year: 2026, loading: true, syncing: false };
 
 function reducer(state, action) {
   switch (action.type) {
