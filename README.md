@@ -33,6 +33,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_anon_key_aqui
 
 ---
 
+## Extratos Nubank incluídos
+
+O aplicativo carrega `public/nubank-transactions.json` e mescla esses lançamentos com os registros já existentes, sem sobrescrevê-los. Cada lançamento importado usa um ID determinístico para evitar repetição; pagamentos de fatura são ignorados e estornos entram como valores negativos em `Outros`. **O arquivo contém dados financeiros pessoais e está público neste repositório/site por autorização explícita do proprietário.**
+
 ## 4. Rodar localmente
 
 ```bash
