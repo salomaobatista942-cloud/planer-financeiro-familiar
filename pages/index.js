@@ -229,7 +229,7 @@ const SEED = () => {
 
 // ===================== STATE =====================
 const FinCtx = createContext(null);
-const INIT_STATE = { transactions: [], view: 'dashboard', month: 5, year: 2026, loading: true, syncing: false };
+const INIT_STATE = { transactions: [], view: 'dashboard', month: new Date().getMonth() + 1, year: new Date().getFullYear(), loading: true, syncing: false };
 
 function reducer(state, action) {
   switch (action.type) {
@@ -259,15 +259,29 @@ async function dbLoad() {
   }));
 }
 
+const toDbRow = txn => ({
+  id: txn.id, type: txn.type, description: txn.description, amount: txn.amount,
+  category: txn.category, group_name: txn.group, subcategory: txn.subcategory,
+  status: txn.status, payment_method: txn.paymentMethod, date: txn.date,
+  month: txn.month, year: txn.year,
+  installments: txn.installments || 1, installment_month: txn.installmentMonth || null,
+});
+
 async function dbInsert(txn) {
   if (!supabase) return;
-  await supabase.from('transactions').insert([{
-    id: txn.id, type: txn.type, description: txn.description, amount: txn.amount,
-    category: txn.category, group_name: txn.group, subcategory: txn.subcategory,
-    status: txn.status, payment_method: txn.paymentMethod, date: txn.date,
-    month: txn.month, year: txn.year,
-    installments: txn.installments || 1, installment_month: txn.installmentMonth || null,
-  }]);
+  return supabase.from('transactions').insert([toDbRow(txn)]);
+}
+
+async function loadDriveTransactions() {
+  try {
+    const response = await fetch('/nubank-transactions.json');
+    if (!response.ok) return [];
+    const rows = await response.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch (error) {
+    console.error('Extrato Nubank indisponível:', error);
+    return [];
+  }
 }
 
 async function dbUpdate(txn) {
@@ -291,33 +305,46 @@ function FinProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, INIT_STATE);
 
   useEffect(() => {
+    let channel;
+    let active = true;
     async function init() {
       dispatch({ type: 'SET_LOADING', payload: true });
+      const imported = await loadDriveTransactions();
       if (supabase) {
         const remote = await dbLoad();
-        if (remote && remote.length > 0) {
-          dispatch({ type: 'SET_TXN', payload: remote });
-        } else {
-          const seed = SEED();
-          dispatch({ type: 'SET_TXN', payload: seed });
-          for (const t of seed) await dbInsert(t);
-        }
+        const existing = remote && remote.length > 0 ? remote : SEED();
+        const knownIds = new Set(existing.map(t => t.id));
+        const missing = imported.filter(t => !knownIds.has(t.id));
+        if (active) dispatch({ type: 'SET_TXN', payload: [...existing, ...missing] });
+        // Imported CSV rows are displayed without writing them to Supabase.
         // Realtime subscription
-        const channel = supabase.channel('transactions-sync')
+        channel = supabase.channel('transactions-sync')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, async () => {
             const fresh = await dbLoad();
-            if (fresh) dispatch({ type: 'SET_TXN', payload: fresh });
+            if (active && fresh) {
+              const freshIds = new Set(fresh.map(t => t.id));
+              dispatch({ type: 'SET_TXN', payload: [...fresh, ...imported.filter(t => !freshIds.has(t.id))] });
+            }
           }).subscribe();
-        return () => supabase.removeChannel(channel);
       } else {
         try {
           const saved = localStorage.getItem('fin_txns_v3');
-          if (saved) dispatch({ type: 'SET_TXN', payload: JSON.parse(saved) });
-          else dispatch({ type: 'SET_TXN', payload: SEED() });
-        } catch { dispatch({ type: 'SET_TXN', payload: SEED() }); }
+          if (saved) {
+            const local = JSON.parse(saved);
+            const knownIds = new Set(local.map(t => t.id));
+            const missing = imported.filter(t => !knownIds.has(t.id));
+            if (active) dispatch({ type: 'SET_TXN', payload: [...local, ...missing] });
+          } else if (active) dispatch({ type: 'SET_TXN', payload: [...SEED(), ...imported] });
+        } catch {
+          if (active) dispatch({ type: 'SET_TXN', payload: [...SEED(), ...imported] });
+        }
       }
     }
     init();
+    return () => {
+      active = false;
+      if (channel && supabase) supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
