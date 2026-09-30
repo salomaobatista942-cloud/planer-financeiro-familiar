@@ -33,9 +33,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_anon_key_aqui
 
 ---
 
-## Extratos Nubank incluídos
+## Extratos bancários incluídos
 
-O aplicativo carrega `public/nubank-transactions.json` e mescla esses lançamentos com os registros já existentes, sem sobrescrevê-los. Cada lançamento importado usa um ID determinístico para evitar repetição; pagamentos de fatura são ignorados e estornos entram como valores negativos em `Outros`. **O arquivo contém dados financeiros pessoais e está público neste repositório/site por autorização explícita do proprietário.**
+O aplicativo carrega `public/nubank-transactions.json` e mescla os lançamentos com os registros já existentes sem gravá-los automaticamente no Supabase. O lote público reúne 1.232 lançamentos: histórico Nubank e novos extratos Nubank atribuídos a **Elizandra**, além do extrato consolidado de conta corrente atribuído a **Salomão**, conforme confirmação do proprietário. A tela **Titular** separa os gastos por titular e compara cartão com débito/Pix.
+
+Na importação foram pulados arquivos Nubank de conteúdo repetido, pagamentos de fatura, cinco coincidências exatas com registros seed, 43 pares de transferências entre contas e uma linha duplicada do extrato corrente. IDs determinísticos e mesclagem por conteúdo ajudam a evitar repetições nos dados já cadastrados. Entradas e despesas usam os valores em centavos; estornos reduzem despesas.
+
+**O JSON contém informações financeiras pessoais e está público neste repositório e no site por autorização explícita do proprietário.**
 
 ## 4. Rodar localmente
 
