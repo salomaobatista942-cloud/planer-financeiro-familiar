@@ -125,3 +125,115 @@ label.lbl{font-size:12px;color:var(--t2);display:block;margin-bottom:5px;font-we
 @media(max-width:1100px){.cards-row{grid-template-columns:repeat(2,1fr)}.charts-row{grid-template-columns:1fr}}
 @media(max-width:767px){.sidebar{display:none}.cards-row{grid-template-columns:1fr 1fr}.content{padding:14px;gap:14px}.topbar{padding:12px 14px}.form-row{grid-template-columns:1fr}.budget-split{grid-template-columns:1fr}}
 @media(max-width:400px){.cards-row{grid-template-columns:1fr}.card-value{font-size:16px}}
+
+
+/* Financial planning workspace */
+.plan-page{gap:16px}
+.plan-intro{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:20px 22px;background:linear-gradient(120deg,rgba(0,210,106,.09),rgba(76,123,253,.07) 54%,rgba(155,114,246,.08));border:1px solid var(--bd);border-radius:var(--r)}
+.plan-intro h2{font-family:'Syne',sans-serif;font-size:22px;line-height:1.2;margin:4px 0 7px}
+.plan-intro p{max-width:760px;color:var(--t2);font-size:13px;line-height:1.55}
+.plan-eyebrow{font-size:10px;letter-spacing:1.2px;font-weight:700;color:var(--green)}
+.privacy-chip{flex-shrink:0;padding:7px 10px;border:1px solid rgba(0,210,106,.25);border-radius:30px;background:var(--green-dim);color:var(--green);font-size:11px}
+.plan-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 7px;border-bottom:1px solid var(--bd)}
+.plan-tab{border:1px solid transparent;background:transparent;color:var(--t2);padding:8px 12px;border-radius:20px;white-space:nowrap;font:500 12px 'Inter',sans-serif;cursor:pointer;transition:all .16s}
+.plan-tab:hover{background:var(--s2);color:var(--t1)}
+.plan-tab.active{background:var(--green-dim);border-color:rgba(0,210,106,.24);color:var(--green)}
+.plan-cards{grid-template-columns:repeat(4,1fr)}
+.plan-cards.three{grid-template-columns:repeat(3,1fr)}
+.plan-grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.plan-panel{min-width:0;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:18px}
+.plan-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
+.plan-panel-head h3{font:700 14px 'Syne',sans-serif;color:var(--t1)}
+.plan-panel-head p{color:var(--t3);font-size:11px;margin-top:5px;line-height:1.45}
+.plan-meter{margin:14px 0}
+.plan-meter>div:first-child,.reserve-numbers,.extra-income-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.plan-meter span,.reserve-numbers span,.extra-income-row span{font-size:12px;color:var(--t2)}
+.plan-meter b,.reserve-numbers b,.extra-income-row b{font:600 12px 'Space Mono',monospace;color:var(--t1)}
+.plan-tip{margin-top:14px;padding:11px 12px;border:1px solid var(--bd);border-radius:var(--r2);background:var(--s2);color:var(--t3);font-size:11px;line-height:1.5}
+.reserve-numbers{align-items:flex-start;margin:8px 0 14px}
+.reserve-numbers>div,.extra-income-row>div:first-child{display:flex;flex-direction:column;gap:5px}
+.reserve-numbers b{font-size:14px}
+.reserve-bar{height:9px}
+.extra-income-row{align-items:flex-end;flex-wrap:wrap}
+.extra-income-edit{display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end}
+.extra-income-edit input{max-width:175px}
+.first-investment{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2)}
+.first-investment>div{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+.first-investment b{font-size:12px}
+.first-investment span:not(.xp-mark){font-size:11px;color:var(--t3)}
+.first-investment strong{font:700 14px 'Space Mono',monospace;color:var(--green);white-space:nowrap}
+.xp-mark{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--purple-dim);color:var(--purple);font-size:12px;font-weight:800}
+.plan-inline-form{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:10px;margin-bottom:16px}
+.plan-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.plan-field>span{font-size:11px;color:var(--t2);font-weight:500}
+.category-budget-list{display:flex;flex-direction:column;gap:10px}
+.category-budget-row{padding:12px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2)}
+.category-budget-heading{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.category-budget-heading>div:first-child,.category-budget-values{display:flex;flex-direction:column;gap:4px}
+.category-budget-heading b{font-size:12px}
+.category-budget-heading span,.category-budget-row small{font-size:10px;color:var(--t3)}
+.category-budget-values{text-align:right}
+.category-budget-values b{font:600 12px 'Space Mono',monospace}
+.category-budget-row small{display:block;margin-top:6px}
+.category-budget-row .over-budget{color:var(--red)}
+.unclassified-list{display:flex;flex-direction:column;gap:8px}
+.unclassified-row{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:10px;align-items:center;padding:9px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2)}
+.unclassified-row>div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.unclassified-row b{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.unclassified-row span,.unclassified-list>small{font-size:10px;color:var(--t3)}
+.unclassified-list>small{line-height:1.5}
+.category-strategy-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.category-strategy-grid>div{display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2)}
+.category-strategy-grid b{font-size:12px;color:var(--t1)}
+.category-strategy-grid span{font-size:11px;color:var(--t3);line-height:1.45}
+.plan-empty{padding:18px;border:1px dashed var(--bd2);border-radius:var(--r2);color:var(--t3);font-size:12px;line-height:1.5;text-align:center}
+.debt-method-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.debt-method-row>span:first-child{font-size:11px;color:var(--t2)}
+.debt-method-row select{width:auto;min-width:250px}
+.plan-muted{font-size:10px;color:var(--t3);flex:1}
+.plan-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;align-items:end}
+.debt-form{grid-template-columns:repeat(3,minmax(0,1fr));padding:14px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2)}
+.investment-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wish-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+.debt-list,.wish-list,.plan-note-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.debt-card,.wish-card,.plan-note{padding:13px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2)}
+.debt-top,.debt-top>div,.debt-balance-row,.debt-pay-row,.wish-main,.wish-actions{display:flex;align-items:center;gap:10px}
+.debt-top{justify-content:space-between}
+.debt-top>div{min-width:0;flex-wrap:wrap}
+.debt-top b{font-size:12px}
+.debt-top span:not(.debt-rank),.debt-balance-row span,.debt-card small{font-size:10px;color:var(--t3)}
+.debt-rank{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:var(--red-dim);color:var(--red);font-size:10px}
+.debt-balance-row{justify-content:space-between;margin:12px 0 2px}
+.debt-balance-row b{color:var(--t1);font:600 12px 'Space Mono',monospace;margin-left:6px}
+.debt-card small{display:block;margin-top:6px}
+.debt-pay-row{margin-top:10px}
+.debt-pay-row input{max-width:180px}
+.plan-table-wrap{overflow:auto}
+.money-green{color:var(--green);font-family:'Space Mono',monospace;font-weight:600}
+.plan-note-form{display:flex;flex-direction:column;gap:12px}
+.plan-note-form textarea{resize:vertical;min-height:90px;line-height:1.5}
+.plan-note{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:start}
+.plan-note>div{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.plan-note b{font-size:12px}
+.plan-note span{font-size:10px;color:var(--t3)}
+.plan-note p{grid-column:1/-1;color:var(--t2);font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.plan-note button{grid-column:2;grid-row:1}
+.wish-card{border-left:3px solid var(--blue)}
+.wish-card.priority-high{border-left-color:var(--red)}
+.wish-card.priority-low{border-left-color:var(--t3)}
+.wish-priority{font-size:10px;color:var(--amber);margin-bottom:7px}
+.priority-high .wish-priority{color:var(--red)}
+.priority-low .wish-priority{color:var(--t3)}
+.wish-main{justify-content:space-between;align-items:flex-start}
+.wish-main>div{min-width:0}
+.wish-main h4{font-size:13px;margin-bottom:4px}
+.wish-main span,.wish-main p{font-size:10px;color:var(--t3);line-height:1.45}
+.wish-main p{margin-top:5px}
+.wish-main strong{font:700 13px 'Space Mono',monospace;color:var(--t1);white-space:nowrap}
+.wish-actions{justify-content:flex-end;margin-top:10px}
+@media(max-width:1100px){.plan-cards{grid-template-columns:repeat(2,1fr)}.plan-grid-two{grid-template-columns:1fr}.category-strategy-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.plan-intro{flex-direction:column;padding:16px}.plan-intro h2{font-size:19px}.privacy-chip{white-space:normal}.plan-inline-form{grid-template-columns:1fr}.plan-form-grid,.debt-form,.investment-form,.wish-form{grid-template-columns:1fr 1fr}.debt-method-row select{min-width:0;flex:1}.plan-muted{flex-basis:100%}.plan-cards,.plan-cards.three{grid-template-columns:1fr 1fr}.unclassified-row{grid-template-columns:minmax(0,1fr) 132px}.category-strategy-grid{grid-template-columns:1fr 1fr}.extra-income-edit{justify-content:flex-start}}
+@media(max-width:440px){.plan-form-grid,.debt-form,.investment-form,.wish-form{grid-template-columns:1fr}.plan-cards,.plan-cards.three{grid-template-columns:1fr}.unclassified-row{grid-template-columns:1fr}.unclassified-row select{max-width:none}.category-strategy-grid{grid-template-columns:1fr}.debt-pay-row{align-items:stretch;flex-direction:column}.debt-pay-row input{max-width:none}.first-investment{flex-wrap:wrap}.first-investment strong{margin-left:48px}}
+
+.plan-intro-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+@media(max-width:767px){.plan-intro-actions{width:100%;align-items:flex-start}.plan-intro-actions .privacy-chip{max-width:100%}}

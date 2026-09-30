@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext, createContext, useReducer, useRef, useCallback } from 'react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
+import PlanningPage from '../components/PlanningPage';
+import { CATEGORY_GROUPS, classifyImportedTransaction } from '../lib/finance-categories';
 
 // ===================== SUPABASE =====================
 const SUPABASE_URL = 'https://ajftntxhhrntqnbtyizu.supabase.co';
@@ -10,7 +12,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 // ===================== CONSTANTS =====================
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTHS_F = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const CATS_EXP = ['Alimentacao','Casa','Transporte','Saude','Educacao','Streaming','Tecnologia','Comunicacao','Trabalho','Pet','Religiao','Restaurante','Presentes','Vestuario','Compromissos','Pessoal','Outros'];
+const CATS_EXP = ['Casa','Alimentacao','Transporte','Saude','Educacao','Comunicacao','Trabalho','Pet','Compromissos','Tarifas','Dividas','Investimentos','Streaming','Restaurante','Tecnologia','Presentes','Vestuario','Lazer','Pessoal','Transferencias','Outros','A classificar'];
 const CATS_INC = ['Salario','Freelance','Bonus','Investimentos','Outra Fonte','Renda Extra'];
 const PAY_METHODS = ['pix','credit','debit','boleto','cash'];
 const PAY_LABELS = {pix:'Pix',credit:'Credito',debit:'Debito',boleto:'Boleto',cash:'Dinheiro'};
@@ -47,8 +49,11 @@ const groupByCat = txns => {
 };
 
 const groupsByType = txns => {
-  const acc = { necessidades: 0, desejos: 0, futuro: 0 };
-  txns.forEach(t => { if (acc[t.group] !== undefined) acc[t.group] += t.amount; });
+  const acc = { necessidades: 0, desejos: 0, futuro: 0, a_classificar: 0, fora_orcamento: 0 };
+  txns.forEach(t => {
+    const group = t.group === 'outros' ? 'a_classificar' : t.group;
+    if (acc[group] !== undefined) acc[group] += t.amount;
+  });
   return acc;
 };
 
@@ -278,11 +283,16 @@ async function loadDriveTransactions() {
     const response = await fetch('/nubank-transactions.json');
     if (!response.ok) return [];
     const rows = await response.json();
-    return Array.isArray(rows) ? rows : [];
+    return Array.isArray(rows) ? rows.map(classifyImportedTransaction) : [];
   } catch (error) {
     console.error('Extrato Nubank indisponível:', error);
     return [];
   }
+}
+
+function loadCategoryOverrides() {
+  try { return JSON.parse(localStorage.getItem('finance_category_overrides_v1') || '{}'); }
+  catch { return {}; }
 }
 
 const importedSignature = txn => [
@@ -310,6 +320,8 @@ function mergeImportedTransactions(existing, imported) {
       matchedExisting.add(match);
       if (txn.titular) match.titular = txn.titular;
       if (txn.source) match.source = txn.source;
+      if (txn.category) match.category = txn.category;
+      if (txn.group !== undefined) match.group = txn.group;
       byId.set(txn.id, match);
       return;
     }
@@ -319,6 +331,14 @@ function mergeImportedTransactions(existing, imported) {
     byId.set(txn.id, added);
   });
   return merged;
+}
+
+function applyCategoryOverrides(transactions, overrides) {
+  return (transactions || []).map(txn => {
+    const category = overrides && overrides[txn.id];
+    if (!category) return txn;
+    return { ...txn, category, group:CATEGORY_GROUPS[category] || 'a_classificar' };
+  });
 }
 
 async function dbUpdate(txn) {
@@ -350,14 +370,14 @@ function FinProvider({ children }) {
       if (supabase) {
         const remote = await dbLoad();
         const existing = remote && remote.length > 0 ? remote : SEED();
-        if (active) dispatch({ type: 'SET_TXN', payload: mergeImportedTransactions(existing, imported) });
+        if (active) dispatch({ type: 'SET_TXN', payload: applyCategoryOverrides(mergeImportedTransactions(existing, imported), loadCategoryOverrides()) });
         // Imported CSV rows are displayed without writing them to Supabase.
         // Realtime subscription
         channel = supabase.channel('transactions-sync')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, async () => {
             const fresh = await dbLoad();
             if (active && fresh) {
-              dispatch({ type: 'SET_TXN', payload: mergeImportedTransactions(fresh, imported) });
+              dispatch({ type: 'SET_TXN', payload: applyCategoryOverrides(mergeImportedTransactions(fresh, imported), loadCategoryOverrides()) });
             }
           }).subscribe();
       } else {
@@ -365,10 +385,10 @@ function FinProvider({ children }) {
           const saved = localStorage.getItem('fin_txns_v3');
           if (saved) {
             const local = JSON.parse(saved);
-            if (active) dispatch({ type: 'SET_TXN', payload: mergeImportedTransactions(local, imported) });
-          } else if (active) dispatch({ type: 'SET_TXN', payload: mergeImportedTransactions(SEED(), imported) });
+            if (active) dispatch({ type: 'SET_TXN', payload: applyCategoryOverrides(mergeImportedTransactions(local, imported), loadCategoryOverrides()) });
+          } else if (active) dispatch({ type: 'SET_TXN', payload: applyCategoryOverrides(mergeImportedTransactions(SEED(), imported), loadCategoryOverrides()) });
         } catch {
-          if (active) dispatch({ type: 'SET_TXN', payload: mergeImportedTransactions(SEED(), imported) });
+          if (active) dispatch({ type: 'SET_TXN', payload: applyCategoryOverrides(mergeImportedTransactions(SEED(), imported), loadCategoryOverrides()) });
         }
       }
     }
@@ -397,6 +417,15 @@ function FinProvider({ children }) {
     delTxn: async id => {
       dispatch({ type: 'DEL_TXN', id });
       await dbDelete(id);
+    },
+    setTxnCategory: (txnId, category) => {
+      const txn = state.transactions.find(item => item.id === txnId);
+      if (!txn) return;
+      const group = CATEGORY_GROUPS[category] || 'a_classificar';
+      const overrides = loadCategoryOverrides();
+      overrides[txnId] = category;
+      localStorage.setItem('finance_category_overrides_v1', JSON.stringify(overrides));
+      dispatch({ type:'UPD_TXN', payload:{ ...txn, category, group } });
     },
   };
 
@@ -877,7 +906,9 @@ function Dashboard() {
   const sr = savingsRate(inc, exp);
   const monthly = getMonthlyTotals(transactions, year).filter(m => m.inc > 0 || m.exp > 0);
   const catData = groupByCat(expTxns);
-  const groups = groupsByType(expTxns);
+  const budgetTxns = expTxns.filter(t => t.group !== 'fora_orcamento');
+  const budgetTotal = sumAmts(budgetTxns);
+  const groups = groupsByType(budgetTxns);
   const pending = expTxns.filter(t => t.status === 'pending' || t.status === 'overdue');
   const pendingAmt = sumAmts(pending);
   const incHistory = getMonthlyTotals(transactions, year).map(m => m.inc);
@@ -951,21 +982,22 @@ function Dashboard() {
       {exp > 0 && (
         <div className="chart-card">
           <div className="chart-title">Regra 50/30/20</div>
-          <div className="chart-sub">Necessidades · Desejos · Futuro</div>
+          <div className="chart-sub">Necessidades · Desejos · Futuro. Transferencias ficam fora dos percentuais.</div>
           <div className="budget-split">
             {[
               { key:'necessidades', label:'Necessidades', target:50, color:'var(--blue)' },
               { key:'desejos', label:'Desejos', target:30, color:'var(--amber)' },
               { key:'futuro', label:'Futuro / Poupanca', target:20, color:'var(--purple)' },
+              { key:'a_classificar', label:'A classificar', target:null, color:'var(--red)' },
             ].map(g => {
               const amt = groups[g.key] || 0;
-              const pct = exp ? (amt / exp) * 100 : 0;
-              const ok = pct <= g.target;
+              const pct = budgetTotal ? (amt / budgetTotal) * 100 : 0;
+              const ok = g.target != null && pct <= g.target;
               return (
                 <div key={g.key} className="budget-item">
                   <div className="budget-cat"><span className="budget-cat-dot" style={{ background:g.color }} />{g.label}</div>
                   <div className="budget-amt" style={{ color:g.color }}>{fmt(amt)}</div>
-                  <div className="budget-target">{pct.toFixed(1)}% · meta {g.target}% {ok ? '✓' : '!'}</div>
+                  <div className="budget-target">{pct.toFixed(1)}%{g.target == null ? ' · revisar categoria' : ` · meta ${g.target}% ${ok ? '✓' : '!'}`}</div>
                   <div className="prog-bar" style={{ height:8 }}>
                     <div className="prog-fill" style={{ width: Math.min(100, pct) + '%', background:g.color, transition:'width 0.8s ease' }} />
                   </div>
@@ -1427,6 +1459,7 @@ const Icons = {
   expense: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M12 5v14m7-7-7 7-7-7" /></svg>,
   calendar: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   analytics: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg>,
+  planning: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /><path d="M8 7h8M8 11h8" /></svg>,
   menu: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M3 12h18M3 6h18M3 18h18" /></svg>,
   sync: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>,
 };
@@ -1439,6 +1472,7 @@ const NAV = [
   { id:'calendar', label:'Calendario', icon:Icons.calendar },
   { id:'analytics', label:'Analytics', icon:Icons.analytics },
   { id:'titular', label:'Titular', icon:Icons.analytics },
+  { id:'planning', label:'Organizacao', icon:Icons.planning },
 ];
 
 function Sidebar({ mobile, onClose }) {
@@ -1483,11 +1517,11 @@ function Sidebar({ mobile, onClose }) {
   );
 }
 
-const PAGE_TITLES = { dashboard:'Dashboard', income:'Entradas', expenses:'Saidas', calendar:'Calendario', analytics:'Analytics', titular:'Titular' };
-const PAGE_SUBS = { dashboard:'Visao geral financeira', income:'Controle de ganhos', expenses:'Controle de gastos', calendar:'Calendario de pagamentos', analytics:'Projecoes e analises', titular:'Cartao e debito por titular' };
+const PAGE_TITLES = { dashboard:'Dashboard', income:'Entradas', expenses:'Saidas', calendar:'Calendario', analytics:'Analytics', titular:'Titular', planning:'Organizacao' };
+const PAGE_SUBS = { dashboard:'Visao geral financeira', income:'Controle de ganhos', expenses:'Controle de gastos', calendar:'Calendario de pagamentos', analytics:'Projecoes e analises', titular:'Cartao e debito por titular', planning:'Dividas, categorias, investimentos e desejos' };
 
 function AppInner() {
-  const { state, dispatch } = useFin();
+  const { state, dispatch, actions } = useFin();
   const { view, month, year, loading, syncing } = state;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -1506,6 +1540,7 @@ function AppInner() {
     calendar: <CalendarPage />,
     analytics: <AnalyticsPage />,
     titular: <TitularPage />,
+    planning: <PlanningPage transactions={state.transactions} month={month} year={year} onSetCategory={actions.setTxnCategory} />,
   };
 
   if (loading) return (

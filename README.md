@@ -78,3 +78,14 @@ financeiro-familia/
 - Nunca suba o arquivo `.env.local` para o GitHub (já está no .gitignore)
 - Use apenas a `anon key` no frontend (já está configurado assim)
 - A `service_role key` nunca deve ir para o frontend
+
+
+## Planejamento financeiro
+
+A seção **Organização** contém resumo mensal, limites por categoria, revisão de lançamentos não classificados, acompanhamento manual de dívidas, histórico de aportes, caderno de anotações e lista de desejos por prioridade. A estrutura segue os grupos de essenciais, não essenciais e futuro, com uma referência de reserva equivalente a seis meses de despesas essenciais.
+
+A classificação automática de despesas usa regras locais baseadas no texto do lançamento; ela é uma sugestão, não uma garantia. As categorias podem ser corrigidas na tela e as correções ficam neste navegador. **Anotações, dívidas, metas, aportes e desejos também são salvos somente no armazenamento local do navegador**: não são enviados ao Supabase nem publicados no GitHub. Use **Baixar backup** para exportar o planejamento. Esses dados não sincronizam entre dispositivos ou navegadores.
+
+O registro de aportes é manual: o total representa apenas contribuições informadas. O aplicativo não acessa a XP, não estima rentabilidade e não mostra saldo ou cotação de mercado. Dívidas são acompanhadas separadamente do fluxo de caixa; registre também o pagamento como saída se quiser incluí-lo nos gráficos mensais.
+
+O arquivo `components/PlanningPage.js` implementa os módulos do planejamento e `lib/finance-categories.js` contém as regras locais de classificação.
