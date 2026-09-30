@@ -3,6 +3,8 @@ import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import PlanningPage from '../components/PlanningPage';
 import { CATEGORY_GROUPS, classifyImportedTransaction } from '../lib/finance-categories';
+import financePersistence from '../lib/finance-persistence';
+const { mergeImportedTransactions, saveTransaction } = financePersistence;
 
 // ===================== SUPABASE =====================
 const SUPABASE_URL = 'https://ajftntxhhrntqnbtyizu.supabase.co';
@@ -261,21 +263,9 @@ async function dbLoad() {
     status: r.status, paymentMethod: r.payment_method, date: r.date,
     month: r.month, year: r.year,
     titular: r.titular || null, source: r.source || null,
+    categoryOverride: r.category_override || null, importRecordId: r.import_record_id || null,
     installments: r.installments || 1, installmentMonth: r.installment_month || null,
   }));
-}
-
-const toDbRow = txn => ({
-  id: txn.id, type: txn.type, description: txn.description, amount: txn.amount,
-  category: txn.category, group_name: txn.group, subcategory: txn.subcategory,
-  status: txn.status, payment_method: txn.paymentMethod, date: txn.date,
-  month: txn.month, year: txn.year,
-  installments: txn.installments || 1, installment_month: txn.installmentMonth || null,
-});
-
-async function dbInsert(txn) {
-  if (!supabase) return;
-  return supabase.from('transactions').insert([toDbRow(txn)]);
 }
 
 async function loadDriveTransactions() {
@@ -295,61 +285,12 @@ function loadCategoryOverrides() {
   catch { return {}; }
 }
 
-const importedSignature = txn => [
-  txn.date || '', txn.type || '', Number(txn.amount) || 0,
-  String(txn.description || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(),
-].join('|');
-
-function mergeImportedTransactions(existing, imported) {
-  const merged = (existing || []).map(txn => ({ ...txn }));
-  const byId = new Map(merged.map(txn => [txn.id, txn]));
-  const bySignature = new Map();
-  merged.forEach(txn => {
-    const signature = importedSignature(txn);
-    if (!bySignature.has(signature)) bySignature.set(signature, []);
-    bySignature.get(signature).push(txn);
-  });
-  const matchedExisting = new Set();
-  (imported || []).forEach(txn => {
-    let match = byId.get(txn.id);
-    if (!match) {
-      const candidates = bySignature.get(importedSignature(txn)) || [];
-      match = candidates.find(candidate => !matchedExisting.has(candidate));
-    }
-    if (match) {
-      matchedExisting.add(match);
-      if (txn.titular) match.titular = txn.titular;
-      if (txn.source) match.source = txn.source;
-      if (txn.category) match.category = txn.category;
-      if (txn.group !== undefined) match.group = txn.group;
-      byId.set(txn.id, match);
-      return;
-    }
-    if (byId.has(txn.id)) return;
-    const added = { ...txn };
-    merged.push(added);
-    byId.set(txn.id, added);
-  });
-  return merged;
-}
-
 function applyCategoryOverrides(transactions, overrides) {
   return (transactions || []).map(txn => {
-    const category = overrides && overrides[txn.id];
+    const category = txn.categoryOverride || (overrides && (overrides[txn.id] || overrides[txn.importRecordId]));
     if (!category) return txn;
-    return { ...txn, category, group:CATEGORY_GROUPS[category] || 'a_classificar' };
+    return { ...txn, category, categoryOverride:category, group:CATEGORY_GROUPS[category] || 'a_classificar' };
   });
-}
-
-async function dbUpdate(txn) {
-  if (!supabase) return;
-  await supabase.from('transactions').update({
-    type: txn.type, description: txn.description, amount: txn.amount,
-    category: txn.category, group_name: txn.group, subcategory: txn.subcategory,
-    status: txn.status, payment_method: txn.paymentMethod, date: txn.date,
-    month: txn.month, year: txn.year,
-    installments: txn.installments || 1, installment_month: txn.installmentMonth || null,
-  }).eq('id', txn.id);
 }
 
 async function dbDelete(id) {
@@ -407,25 +348,29 @@ function FinProvider({ children }) {
 
   const actions = {
     addTxn: async txn => {
+      await saveTransaction(supabase, txn);
       dispatch({ type: 'ADD_TXN', payload: txn });
-      await dbInsert(txn);
     },
     updTxn: async txn => {
-      dispatch({ type: 'UPD_TXN', payload: txn });
-      await dbUpdate(txn);
+      const persisted = txn.importRecordId ? { ...txn, categoryOverride:txn.category } : txn;
+      await saveTransaction(supabase, persisted);
+      dispatch({ type: 'UPD_TXN', payload: persisted });
     },
     delTxn: async id => {
       dispatch({ type: 'DEL_TXN', id });
       await dbDelete(id);
     },
-    setTxnCategory: (txnId, category) => {
+    setTxnCategory: async (txnId, category) => {
       const txn = state.transactions.find(item => item.id === txnId);
       if (!txn) return;
       const group = CATEGORY_GROUPS[category] || 'a_classificar';
+      const updated = { ...txn, category, categoryOverride:category, group };
+      await saveTransaction(supabase, updated);
       const overrides = loadCategoryOverrides();
       overrides[txnId] = category;
+      if (txn.importRecordId) overrides[txn.importRecordId] = category;
       localStorage.setItem('finance_category_overrides_v1', JSON.stringify(overrides));
-      dispatch({ type:'UPD_TXN', payload:{ ...txn, category, group } });
+      dispatch({ type:'UPD_TXN', payload:updated });
     },
   };
 
@@ -773,6 +718,8 @@ function TxnModal({ txn, type, onSave, onClose }) {
     installments:1, installmentMonth:null,
   });
   const [amtCents, setAmtCents] = useState(initAmount);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const isCredit = form.paymentMethod === 'credit';
@@ -782,15 +729,23 @@ function TxnModal({ txn, type, onSave, onClose }) {
     setForm(f => ({ ...f, date:v, month, year }));
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!form.description || amtCents === 0) return;
     const { month, year } = dateToMonthYear(form.date);
-    onSave({
-      ...form, id: txn ? txn.id : uuid(), amount: amtCents,
-      month, year, type: form.type || type,
-      installments: isCredit ? (parseInt(form.installments) || 1) : 1,
-      installmentMonth: isCredit ? (parseInt(form.installmentMonth) || month) : null,
-    });
+    setSaving(true);
+    setSaveError('');
+    try {
+      await onSave({
+        ...form, id: txn ? txn.id : uuid(), amount: amtCents,
+        month, year, type: form.type || type,
+        installments: isCredit ? (parseInt(form.installments) || 1) : 1,
+        installmentMonth: isCredit ? (parseInt(form.installmentMonth) || month) : null,
+      });
+    } catch (error) {
+      setSaveError(`Não foi possível salvar no banco. A alteração continua no formulário. ${error?.message || ''}`.trim());
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -885,9 +840,10 @@ function TxnModal({ txn, type, onSave, onClose }) {
               )}
             </>
           )}
+          {saveError && <div role="alert" style={{ color:'var(--red)', fontSize:13, lineHeight:1.4 }}>{saveError}</div>}
           <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:8 }}>
-            <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
-            <button className="btn btn-primary" onClick={submit}>Salvar</button>
+            <button className="btn btn-ghost" onClick={onClose} disabled={saving}>Cancelar</button>
+            <button className="btn btn-primary" onClick={submit} disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</button>
           </div>
         </div>
       </div>

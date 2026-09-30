@@ -54,6 +54,7 @@ export default function PlanningPage({ transactions, month, year, onSetCategory 
   const [wishForm, setWishForm] = useState({ name:'', price:'', store:'', priority:'medium', targetDate:'', note:'' });
   const [paydowns, setPaydowns] = useState({});
   const [extraTargetInput, setExtraTargetInput] = useState('');
+  const [categorySaveError, setCategorySaveError] = useState('');
 
   useEffect(() => {
     try {
@@ -79,6 +80,14 @@ export default function PlanningPage({ transactions, month, year, onSetCategory 
   }, [plan, loaded]);
 
   const update = updater => setPlan(current => typeof updater === 'function' ? updater(current) : { ...current, ...updater });
+  const saveCategory = async (transactionId, category) => {
+    setCategorySaveError('');
+    try {
+      await onSetCategory(transactionId, category);
+    } catch (error) {
+      setCategorySaveError(`Não foi possível salvar a categoria. ${error?.message || 'Tente novamente.'}`);
+    }
+  };
   const expenses = useMemo(() => transactions.filter(t => t.type === 'expense' && t.month === month && t.year === year), [transactions, month, year]);
   const incomes = useMemo(() => transactions.filter(t => t.type === 'income' && t.month === month && t.year === year), [transactions, month, year]);
   const incomeTotal = incomes.reduce((sum,t) => sum + t.amount, 0);
@@ -236,9 +245,10 @@ export default function PlanningPage({ transactions, month, year, onSetCategory 
           </div>
         </Panel>
         <Panel title="Classificar lancamentos" subtitle="As sugestoes automaticas nao reconhecidas ficam aqui para sua revisao.">
+          {categorySaveError && <div role="alert" className="plan-tip" style={{ color:'var(--red)' }}>{categorySaveError}</div>}
           {unclassified.length === 0 ? <div className="plan-empty">Nenhum lancamento “A classificar” neste mes. Se vir uma categoria incorreta, ajuste-a na aba Saidas.</div> : <div className="unclassified-list">
-            {unclassified.map(t => <div className="unclassified-row" key={t.id}><div><b>{t.description}</b><span>{dateLabel(t.date)} · {fmt(t.amount)}</span></div><select aria-label={`Categoria de ${t.description}`} defaultValue="A classificar" onChange={e => onSetCategory(t.id,e.target.value)}><option value="A classificar">A classificar</option>{EXPENSE_CATEGORIES.filter(c => !['Outros','A classificar'].includes(c)).map(c => <option key={c}>{c}</option>)}</select></div>)}
-            <small>Mostrando ate 24 lancamentos deste mes. Sua correcao fica salva neste navegador.</small>
+            {unclassified.map(t => <div className="unclassified-row" key={t.id}><div><b>{t.description}</b><span>{dateLabel(t.date)} · {fmt(t.amount)}</span></div><select aria-label={`Categoria de ${t.description}`} defaultValue="A classificar" onChange={e => saveCategory(t.id,e.target.value)}><option value="A classificar">A classificar</option>{EXPENSE_CATEGORIES.filter(c => !['Outros','A classificar'].includes(c)).map(c => <option key={c}>{c}</option>)}</select></div>)}
+            <small>Mostrando ate 24 lancamentos deste mes. A classificacao manual e gravada no banco compartilhado.</small>
           </div>}
         </Panel>
       </div>
