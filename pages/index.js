@@ -255,6 +255,7 @@ async function dbLoad() {
     category: r.category, group: r.group_name, subcategory: r.subcategory,
     status: r.status, paymentMethod: r.payment_method, date: r.date,
     month: r.month, year: r.year,
+    titular: r.titular || null, source: r.source || null,
     installments: r.installments || 1, installmentMonth: r.installment_month || null,
   }));
 }
@@ -307,8 +308,8 @@ function mergeImportedTransactions(existing, imported) {
     }
     if (match) {
       matchedExisting.add(match);
-      if (!match.titular && txn.titular) match.titular = txn.titular;
-      if (!match.source && txn.source) match.source = txn.source;
+      if (txn.titular) match.titular = txn.titular;
+      if (txn.source) match.source = txn.source;
       byId.set(txn.id, match);
       return;
     }
